@@ -183,6 +183,25 @@ const SIGN=`<svg viewBox="0 0 220 195" width="170" role="img" aria-label="Verkeh
 <polygon class="sgn" points="110,8 212,186 8,186" stroke-linejoin="round"/><polygon class="sgi" points="110,46 179,166 41,166"/>
 <polygon class="sgk" points="56,158 164,158 164,126"/><text class="sgt" x="110" y="122" text-anchor="middle">12%</text></svg>`;
 
+
+/* ---------- Aufgabengenerator: neue Zahlen bei jedem Klick ---------- */
+const R=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const r2=n=>Math.round(n*100)/100;
+function F(n,dd=2){const f=10**dd;n=Math.round(n*f)/f;const neg=n<0;n=Math.abs(n);let [i,d]=String(n).split('.');if(i.length>3)i=i.replace(/\B(?=(\d{3})+(?!\d))/g,"'");return (neg?'−':'')+i+(d?','+d:'');}
+const GEN={
+ pct:()=>{const [a,b]=pick([[1,2],[1,4],[3,4],[1,5],[2,5],[3,5],[4,5],[1,8],[3,8],[5,8],[7,8],[3,10],[7,10],[9,10],[3,20],[7,20],[9,25],[12,25],[17,50],[5,4],[3,2]]);const v=a/b;return{q:'Schreibe '+a+'/'+b+' in Prozent.',a:v*100,u:'%',e:a+' : '+b+' = '+F(v,3)+' = '+F(v*100)+' %'}},
+ dec:()=>{const p=pick([3,5,8,12,15,24,35,40,65,7.5,120,150]);return{q:'Schreibe '+F(p)+' % als Dezimalzahl.',a:p/100,e:F(p)+' : 100 = '+F(p/100)}},
+ avg:()=>{const l1=pick([200,300,400,500,600,800]),m1=pick([5,8,10,12]),l2=pick([100,150,200,250]),m2=pick([20,25,30,40]);const h1=l1*m1/100,h2=l2*m2/100,v=(h1+h2)/(l1+l2)*100;return{q:'Ein Wanderweg hat zwei Abschnitte. Abschnitt 1: '+l1+' m horizontale Länge, '+F(h1)+' m Höhenunterschied. Abschnitt 2: '+l2+' m horizontale Länge, '+F(h2)+' m Höhenunterschied. Wie gross ist die durchschnittliche Steigung in Prozent? Runde auf 2 Stellen.',a:r2(v),tol:0.006,u:'%',e:'('+F(h1)+' + '+F(h2)+') : ('+l1+' + '+l2+') = '+F(h1+h2)+' : '+(l1+l2)+' ≈ '+F(v)+' %. Die maximale Steigung wäre '+m2+' %.'}},
+ m:()=>{const m=pick([4,5,6,8,10,12,15,16,20,24,25,30,35,40,45,50,60,75,80,120,150]),l=pick([2,4,5,8,10,20,25,40,50,80,100,200,250,400,500]);const h=l*m/100;const cm=h<2&&Math.random()<0.6;const hs=cm?F(h*100)+' cm':F(h)+' m';return{q:'Höhenunterschied '+hs+', horizontale Länge '+F(l)+' m. Wie gross ist die Steigung in Prozent?',a:m,u:'%',e:(cm?'Gleiche Einheiten: '+hs+' = '+F(h)+' m. ':'')+F(h)+' : '+F(l)+' = '+F(m/100)+' = '+m+' %'}},
+ h:()=>{const m=pick([5,6,8,10,12,15,20,25,30,40,50,120]),l=pick([20,40,50,80,120,150,200,250,300,450,600,1200]);const h=l*m/100;return{q:'Eine Strasse hat '+m+' % Steigung. Die horizontale Länge ist '+F(l)+' m. Wie gross ist der Höhenunterschied?',a:r2(h),tol:0.006,u:'m',e:F(m/100)+' · '+F(l)+' m = '+F(h)+' m'}},
+ l:()=>{const m=pick([5,6,8,10,12,15,20,25,40,50]),l=pick([10,20,30,40,60,80,100,150,200,300]);const h=l*m/100;return{q:'Eine Rampe hat '+m+' % Steigung und überwindet '+F(h)+' m. Wie lang ist die horizontale Länge?',a:l,u:'m',e:F(h)+' m : '+F(m/100)+' = '+F(l)+' m'}},
+ pts:()=>{const x1=R(-4,3),dx=R(1,5),y1=R(-4,4);let dy=0;while(!dy)dy=R(-6,6);const x2=x1+dx,y2=y1+dy,v=dy/dx;return{q:'Eine Gerade geht durch A('+F(x1)+'|'+F(y1)+') und B('+F(x2)+'|'+F(y2)+'). Wie gross ist die Steigung m? Runde wenn nötig auf 2 Stellen.',a:r2(v),tol:0.006,e:'('+F(y2)+' − '+(y1<0?'('+F(y1)+')':F(y1))+') : ('+F(x2)+' − '+(x1<0?'('+F(x1)+')':F(x1))+') = '+F(dy)+' : '+dx+' = '+F(v)+(v<0?'. Die Gerade fällt.':'')}},
+ y:()=>{const m=pick([0.5,1.5,2,3,-1,-2,-0.5,0.25]),q=R(-4,4),x=R(-4,6);const y=m*x+q;const eq='y = '+F(m)+'x'+(q?(q>0?' + '+q:' − '+Math.abs(q)):'');return{q:'Gerade '+eq+': Welchen y-Wert hat der Punkt mit x = '+F(x)+'?',a:r2(y),tol:0.006,e:F(m)+' · '+(x<0?'('+F(x)+')':F(x))+(q?(q>0?' + '+q:' − '+Math.abs(q)):'')+' = '+F(y)}},
+ ramp:()=>{const h=pick([30,36,42,45,48,54,60,66,72,90]);const l=h/100/0.06;return{q:'Ein Eingang liegt '+h+' cm höher als der Weg. Eine Rollstuhlrampe darf höchstens 6 % Steigung haben. Wie lang muss die horizontale Länge mindestens sein? Runde auf 2 Stellen.',a:r2(l),tol:0.006,u:'m',e:F(h/100)+' m : 0,06 = '+F(l)+' m'}},
+ bahn:()=>{const t=pick([450,600,780,900,1050,1200,1350]),d=pick([300,450,600,750,900,1200]),L=pick([1500,2000,2500,3000,4000,5000]);const v=d/L*100;return{q:'Eine Bergbahn fährt von '+F(t)+' m ü. M. auf '+F(t+d)+' m ü. M. Die horizontale Länge ist '+F(L)+' m. Wie gross ist die durchschnittliche Steigung in Prozent? Runde auf 2 Stellen.',a:r2(v),tol:0.006,u:'%',e:F(t+d)+' − '+F(t)+' = '+F(d)+' m. '+F(d)+' : '+F(L)+' ≈ '+F(v)+' %'}}
+};
+
 /* ---------- Lernziele (aus «Lernziele LU 14» und LearningView) ---------- */
 const GOALS=[
  [1,'*','t1','… die Begriffe Steigung und Gefälle erklären.'],
@@ -208,6 +227,7 @@ theory:`<p>Steigungen gibt man meistens in <b>Prozent</b> an. Darum musst du sic
 <tr><td>1/5</td><td>0,2</td><td>20 %</td></tr><tr><td>1/10</td><td>0,1</td><td>10 %</td></tr><tr><td>1/8</td><td>0,125</td><td>12,5 %</td></tr><tr><td>5/4</td><td>1,25</td><td>125 %</td></tr></table></div>
 <div class="merk">Prozent heisst «von Hundert»: 12 % = 12/100 = 0,12. Mehr als 100 % ist möglich: 150 % = 1,5.</div>`,
 ex:[
+{t:'gen',b:'Anwenden',g:0,f:GEN.pct},{t:'gen',b:'Anwenden',g:0,f:GEN.dec},
 {t:'match',b:'Wissen',g:0,q:'Ordne jedem Bruch den passenden Prozentsatz zu.',l:['1/2','1/4','3/4','1/5','1/10'],o:['50 %','25 %','75 %','20 %','10 %'],a:[0,1,2,3,4]},
 {t:'num',b:'Anwenden',g:0,q:'Schreibe 0,35 in Prozent.',u:'%',a:35},
 {t:'num',b:'Anwenden',g:0,q:'Schreibe 8 % als Dezimalzahl.',a:0.08,e:'8 : 100 = 0,08'},
@@ -230,6 +250,7 @@ theory:`<p>Die <b>Steigung</b> beschreibt mit einer Zahl, <b>wie steil</b> etwas
 <tr><td>ganzer Weg</td><td>500 m</td><td>70 m</td><td>70 : 500 = <b>14 %</b> (Durchschnitt)</td></tr></table></div>
 <div class="merk">Die durchschnittliche Steigung rechnest du immer mit den Gesamtwerten. Den Mittelwert der Prozentzahlen (hier 20 %) zu nehmen, ist falsch.</div>`,
 ex:[
+{t:'gen',b:'Anwenden',g:2,f:GEN.avg},
 {t:'mc',b:'Verstehen',g:1,q:'Auf einem Verkehrsschild steht 12 %. Was bedeutet das?',o:['Auf 100 m horizontaler Länge steigt die Strasse um 12 m.','Die Strasse ist 12 km lang.','Man muss auf der Strasse 100 m gehen, um 12 m höher zu kommen.','Die Strasse ist 12° steil.'],a:0,e:'Die 100 m misst man horizontal, nicht entlang der schrägen Strasse.'},
 {t:'multi',b:'Wissen',g:1,q:'Die Zahl 12 % auf dem Schild steht für …',o:['12 : 100','0,12','1,2','12/100','120 : 100'],a:[0,1,3]},
 {t:'tf',b:'Verstehen',g:1,q:'Eine Strasse hat von A nach B 8 % Steigung. Von B nach A hat sie 8 % Gefälle.',a:true},
@@ -251,6 +272,7 @@ theory:`<div class="fig">${WEDGE}</div>
 <p>Beispiel Rollstuhlrampe: Sie soll 0,9 m überwinden und darf höchstens 6 % steil sein. Horizontale Länge: 0,9 m : 0,06 = <b>15 m</b>.</p>
 <div class="merk">100 % heisst: Höhe und horizontale Länge sind gleich gross (Winkel 45°). Steigungen über 100 % gibt es auch, z. B. bei Leitern.</div>`,
 ex:[
+{t:'gen',b:'Anwenden',g:4,f:GEN.m},{t:'gen',b:'Anwenden',g:5,f:GEN.h},{t:'gen',b:'Anwenden',g:5,f:GEN.l},
 {t:'num',b:'Anwenden',g:4,q:'Höhenunterschied 3 m, horizontale Länge 12 m. Wie gross ist die Steigung in Prozent?',u:'%',a:25,e:'3 : 12 = 0,25 = 25 %'},
 {t:'num',b:'Anwenden',g:4,q:'Höhenunterschied 45 cm, horizontale Länge 1,5 m. Wie gross ist die Steigung als Dezimalzahl?',a:0.3,e:'Gleiche Einheiten: 45 cm : 150 cm = 0,3'},
 {t:'mc',b:'Wissen',g:3,q:'Die Steigung ist 3/4. Wie viel ist das in Prozent?',o:['75 %','34 %','0,75 %','43 %'],a:0},
@@ -272,6 +294,7 @@ theory:`<p>Auch eine <b>Gerade</b> im Koordinatensystem hat eine Steigung. Du be
 <ul><li><b>m positiv:</b> Die Gerade steigt (von links nach rechts).</li><li><b>m negativ:</b> Die Gerade fällt.</li><li><b>m = 0:</b> Die Gerade ist waagrecht.</li><li>Je grösser die Zahl (ohne Vorzeichen), desto steiler die Gerade.</li></ul>
 <div class="merk">Wähle das Steigungsdreieck so, dass seine Ecken auf Gitterpunkten liegen. Dann kannst du genau ablesen.</div>`,
 ex:[
+{t:'gen',b:'Anwenden',g:7,f:GEN.pts},{t:'gen',b:'Anwenden',g:7,f:GEN.pts},
 {t:'num',b:'Anwenden',g:7,q:'Eine Gerade geht durch A(0|0) und B(4|2). Wie gross ist die Steigung m?',a:0.5,e:'2 nach oben, 4 nach rechts: 2 : 4 = 0,5'},
 {t:'num',b:'Anwenden',g:7,q:'Eine Gerade geht durch A(1|3) und B(3|7). Wie gross ist die Steigung m?',a:2,e:'(7 − 3) : (3 − 1) = 4 : 2 = 2'},
 {t:'num',b:'Anwenden',g:7,q:'Eine Gerade geht durch A(−2|4) und B(2|0). Wie gross ist die Steigung m?',a:-1,e:'(0 − 4) : (2 − (−2)) = −4 : 4 = −1. Die Gerade fällt.'},
@@ -293,6 +316,7 @@ theory:`<p>Jede Gerade kann man mit einer <b>Geradengleichung</b> beschreiben:</
 <p><b>Gleichung bestimmen:</b> q auf der y-Achse ablesen, m mit einem Steigungsdreieck bestimmen, beides in y = m · x + q einsetzen.</p>
 <div class="merk">Parallele Geraden haben die gleiche Steigung m. Ob ein Punkt auf der Geraden liegt, prüfst du, indem du x einsetzt und y vergleichst.</div>`,
 ex:[
+{t:'gen',b:'Anwenden',g:8,f:GEN.y},
 {t:'mc',b:'Wissen',g:8,q:'Wo schneidet die Gerade y = 2x − 3 die y-Achse?',o:['(0|−3)','(0|2)','(−3|0)','(2|−3)'],a:0},
 {t:'mc',b:'Wissen',g:8,q:'Welche Steigung hat die Gerade y = −0,5x + 4?',o:['−0,5','4','0,5','−4'],a:0},
 {t:'num',b:'Anwenden',g:8,q:'Gerade y = 1,5x: Welchen y-Wert hat der Punkt mit x = 4?',a:6,e:'1,5 · 4 = 6'},
@@ -306,6 +330,7 @@ w:[{q:'Zeichne die Gerade y = −0,5x + 2 in dein Übungsheft. Beschreibe deine 
 };
 /* Transferaufgaben für Lernziel 10 (nur in der Lernkontrolle) */
 const CASES=[
+{t:'gen',b:'Anwenden',g:10,f:GEN.ramp},{t:'gen',b:'Anwenden',g:10,f:GEN.bahn},
 {t:'num',b:'Anwenden',g:10,q:'Ein Eingang liegt 60 cm höher als die Strasse. Die Rollstuhlrampe darf höchstens 6 % Steigung haben. Wie lang muss die horizontale Länge mindestens sein?',u:'m',a:10,e:'0,6 m : 0,06 = 10 m'},
 {t:'mc',b:'Analysieren',g:10,q:'Seilbahn: Talstation 900 m ü. M., Stütze 1\'260 m ü. M., Bergstation 1\'740 m ü. M. Horizontale Länge Tal–Stütze 1\'200 m, Stütze–Berg 800 m. Wie gross ist die durchschnittliche Steigung?',o:['42 %','45 %','30 %','60 %'],a:0,e:'(1\'740 − 900) : (1\'200 + 800) = 840 : 2\'000 = 0,42. Die 45 % (Mittelwert aus 30 % und 60 %) sind falsch.'},
 {t:'num',b:'Anwenden',g:10,q:'Eine Leiter lehnt mit 300 % Steigung an einer Wand. Das obere Ende ist 9 m hoch. Wie weit ist der Fuss der Leiter von der Wand entfernt?',u:'m',a:3,e:'9 m : 3 = 3 m'},
@@ -337,7 +362,7 @@ function viewStart(){
   const cnt=GOALS.filter(g=>done[g[0]]).length;
   let cards='';ORDER.forEach(k=>{const gs=GOALS.filter(g=>g[2]===k).map(g=>g[0]);cards+='<a class="card" href="#'+k+'"><span class="n">'+(k==='t0'?'Vorwissen':'Thema '+T[k].nr)+'</span><b>'+T[k].title+'</b><span class="m">'+(gs.length?'Lernziele '+gs.join(', '):'Grundlage für alle Lernziele')+' · '+T[k].ex.length+' Übungen</span></a>'});
   $('#main').innerHTML=`<h2>Prüfungsvorbereitung LU 14 Steigung</h2>
-  <p class="lead">Hier übst du alle Lernziele der LU 14. Zu jedem Thema gibt es eine kurze <b>Theorie</b>, <b>Übungen</b> mit sofortiger Rückmeldung und einen <b>Auftrag fürs Übungsheft</b>. In der <b>Lernkontrolle</b> testest du dich mit gemischten Aufgaben und Transferaufgaben. Geprüft werden die Lernziele mit * und **. Die Lernziele mit *** zählen als Bonus.</p>
+  <p class="lead">Hier übst du alle Lernziele der LU 14. Zu jedem Thema gibt es eine kurze <b>Theorie</b>, <b>Übungen</b> mit sofortiger Rückmeldung (bei «Neue Zahlen» so oft du willst) und einen <b>Auftrag fürs Übungsheft</b>. In der <b>Lernkontrolle</b> testest du dich mit gemischten Aufgaben und Transferaufgaben. Geprüft werden die Lernziele mit * und **. Die Lernziele mit *** zählen als Bonus.</p>
   <div class="box goalbox"><h3>Meine Lernziele</h3><p style="margin:0;color:var(--muted);font-size:.95rem">Ich kann/kenne … Hake ab, was du sicher kannst. * Grundanforderungen · ** mittlere · *** erhöhte Anforderungen</p>
   <div style="margin-top:10px;font-weight:600"><span id="cnt">${cnt}</span> von ${GOALS.length}</div><div class="prog"><div id="bar" style="width:${cnt/GOALS.length*100}%"></div></div>
   <div class="goals">${goalList()}</div></div>
@@ -350,10 +375,16 @@ function qHtml(x,id,num){
   if(x.t==='mc'||x.t==='multi'){const ty=x.t==='mc'?'radio':'checkbox';body='<div class="opts">'+shuffle(x.o.map((o,i)=>i)).map(i=>'<label class="opt" for="'+id+'o'+i+'"><input type="'+ty+'" name="'+id+'" id="'+id+'o'+i+'" value="'+i+'"><span>'+esc(x.o[i])+'</span></label>').join('')+'</div>'+(x.t==='multi'?'<div class="hint">Mehrere Antworten sind richtig.</div>':'');}
   if(x.t==='tf'){body='<div class="opts"><label class="opt" for="'+id+'o0"><input type="radio" name="'+id+'" id="'+id+'o0" value="1"><span>Richtig</span></label><label class="opt" for="'+id+'o1"><input type="radio" name="'+id+'" id="'+id+'o1" value="0"><span>Falsch</span></label></div>';}
   if(x.t==='match'){const PERM=shuffle(x.o.map((o,j)=>j));body='<div class="match">'+x.l.map((l,i)=>'<label for="'+id+'s'+i+'">'+esc(l)+'</label><select id="'+id+'s'+i+'"><option value="">– wählen –</option>'+PERM.map(j=>'<option value="'+j+'">'+esc(x.o[j])+'</option>').join('')+'</select>').join('')+'</div>';}
-  if(x.t==='num'){body='<div class="numrow"><input type="text" inputmode="decimal" autocomplete="off" id="'+id+'n" aria-label="Deine Antwort"><span>'+(x.u||'')+'</span></div><div class="hint">Schreibe den Rechenweg ins Übungsheft. Gib hier nur das Resultat ein (Komma oder Punkt).</div>';}
-  const qt=x.t==='tf'?'Richtig oder falsch? «'+esc(x.q)+'»':esc(x.q);
+  if(x.t==='gen'){x._c=x.f();x._num=num;}
+  if(x.t==='num'||x.t==='gen'){body='<div class="numrow"><input type="text" inputmode="decimal" autocomplete="off" id="'+id+'n" aria-label="Deine Antwort"><span>'+((x.t==='gen'?x._c.u:x.u)||'')+'</span></div><div class="hint">Schreibe den Rechenweg ins Übungsheft. Gib hier nur das Resultat ein (Komma oder Punkt).</div>';}
+  const qt=x.t==='gen'?esc(x._c.q):x.t==='tf'?'Richtig oder falsch? «'+esc(x.q)+'»':esc(x.q);
   const tag=num?('Aufgabe '+num):(x.g?'Lernziel '+x.g:'Vorwissen');
-  return '<div class="q" id="'+id+'"><div class="head"><span class="tag">'+tag+'</span><span class="tag b">'+x.b+'</span></div><p class="qt">'+qt+'</p>'+body+'<div class="row"><button class="btn" data-chk="'+id+'">Überprüfen</button></div><div class="fbx"></div></div>';
+  return '<div class="q" id="'+id+'"><div class="head"><span class="tag">'+tag+'</span><span class="tag b">'+x.b+'</span>'+(x.t==='gen'?'<span class="tag">Neue Zahlen</span>':'')+'</div><p class="qt">'+qt+'</p>'+body+'<div class="row"><button class="btn" data-chk="'+id+'">Überprüfen</button>'+(x.t==='gen'?'<button class="btn sec" data-new="'+id+'">Neue Zahlen</button>':'')+'</div><div class="fbx"></div></div>';
+}
+function bind(x,id){
+  document.querySelector('[data-chk="'+id+'"]').addEventListener('click',()=>check(x,id));
+  const nb=document.querySelector('[data-new="'+id+'"]');
+  if(nb)nb.addEventListener('click',()=>{const el=document.getElementById(id);el.outerHTML=qHtml(x,id,x._num);bind(x,id);const ni=document.getElementById(id+'n');if(ni)ni.focus();});
 }
 function check(x,id){
   const el=document.getElementById(id);let ok=false;
@@ -362,15 +393,15 @@ function check(x,id){
   if(x.t==='tf'){const s=el.querySelector('input:checked');if(!s)return msg(el,null);ok=(s.value==='1')===x.a;el.querySelectorAll('.opt')[x.a?0:1].classList.add('ok');if(!ok)s.closest('.opt').classList.add('bad');}
   if(x.t==='multi'){const s=[...el.querySelectorAll('input:checked')].map(i=>+i.value);if(!s.length)return msg(el,null);ok=s.length===x.a.length&&s.every(v=>x.a.includes(v));el.querySelectorAll('.opt').forEach(o=>{const i=+o.querySelector('input').value;if(x.a.includes(i))o.classList.add('ok');else if(s.includes(i))o.classList.add('bad')});}
   if(x.t==='match'){const ss=[...el.querySelectorAll('select')];if(ss.some(s=>s.value===''))return msg(el,null);ok=true;ss.forEach((s,i)=>{const r=+s.value===x.a[i];s.classList.remove('ok','bad');s.classList.add(r?'ok':'bad');if(!r)ok=false});}
-  if(x.t==='num'){const inp=el.querySelector('input');const raw=inp.value.trim().replace(/[’'\s%]/g,'').replace(/[−–]/g,'-').replace(',','.');if(raw===''||isNaN(+raw))return msg(el,null);ok=Math.abs(+raw-x.a)<=(x.tol??0.001);inp.classList.remove('ok','bad');inp.classList.add(ok?'ok':'bad');}
+  if(x.t==='num'||x.t==='gen'){const X=x.t==='gen'?x._c:x;const inp=el.querySelector('input');const raw=inp.value.trim().replace(/[’'\s%]/g,'').replace(/[−–]/g,'-').replace(',','.');if(raw===''||isNaN(+raw))return msg(el,null);ok=Math.abs(+raw-X.a)<=(X.tol??0.001);inp.classList.remove('ok','bad');inp.classList.add(ok?'ok':'bad');}
   msg(el,ok,x);return ok;
 }
 function msg(el,ok,x){
   const f=el.querySelector('.fbx');
   if(ok===null){f.innerHTML='<div class="fb bad">Gib zuerst eine Antwort ein.</div>';return null}
-  let extra='';
+  let extra='';if(x.t==='gen')x=Object.assign({},x,x._c,{t:'num'});
   if(x.t==='match'&&!ok)extra=' Richtig wäre: '+x.l.map((l,i)=>esc(l)+' → '+esc(x.o[x.a[i]])).join('; ')+'.';
-  if(x.t==='num'&&!ok)extra=' Richtig wäre: '+fmt(x.a)+(x.u?' '+x.u:'')+'.';
+  if(x.t==='num'&&!ok)extra=' Richtig wäre: '+F(x.a)+(x.u?' '+x.u:'')+'.';
   f.innerHTML='<div class="fb '+(ok?'ok':'bad')+'"><b>'+(ok?'Richtig!':'Noch nicht ganz.')+'</b>'+extra+' '+(x.e?esc(x.e):'')+'</div>';
   return ok;
 }
@@ -384,7 +415,7 @@ function viewTopic(k){
   <section id="ex" hidden>${tp.ex.map((x,i)=>qHtml(x,k+'q'+i)).join('')}<div class="row"><a class="btn sec" href="#test" style="text-decoration:none">Zur Lernkontrolle →</a></div></section>
   <section id="wr" hidden>${tp.w.map((w,i)=>'<div class="box write"><h3>Auftrag '+(i+1)+'</h3><p>'+esc(w.q)+'</p><p style="font-size:.9rem;color:var(--muted)">Löse zuerst selbst im Übungsheft oder schreibe ins Feld. Vergleiche danach mit der Musterlösung.</p><textarea id="'+k+'w'+i+'" aria-label="Deine Antwort"></textarea><div class="row"><button class="btn sec" data-sol="'+k+'s'+i+'">Musterlösung zeigen</button></div><div class="sol" id="'+k+'s'+i+'" hidden>'+esc(w.a)+'</div></div>').join('')}</section>`;
   document.querySelectorAll('.tabs button').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.tabs button').forEach(x=>x.classList.toggle('on',x===b));['th','ex','wr'].forEach(s=>$('#'+s).hidden=s!==b.dataset.tab)}));
-  tp.ex.forEach((x,i)=>{document.querySelector('[data-chk="'+k+'q'+i+'"]').addEventListener('click',()=>check(x,k+'q'+i))});
+  tp.ex.forEach((x,i)=>bind(x,k+'q'+i));
   document.querySelectorAll('[data-sol]').forEach(b=>b.addEventListener('click',()=>{const s=document.getElementById(b.dataset.sol);s.hidden=!s.hidden;b.textContent=s.hidden?'Musterlösung zeigen':'Musterlösung verbergen'}));
 }
 let TEST=[];
@@ -398,7 +429,7 @@ function viewTest(){
   $('#main').innerHTML=`<h2>Lernkontrolle</h2><p class="lead">${TEST.length} gemischte Aufgaben aus allen Themen, dazu Transferaufgaben (Lernziel 10). Löse alle Aufgaben und klicke dann unten auf «Auswerten». Mit «Neue Lernkontrolle» bekommst du andere Aufgaben.</p>
   ${TEST.map((x,i)=>qHtml(x,'tq'+i,i+1)).join('')}
   <div class="row"><button class="btn" id="eval">Auswerten</button><button class="btn sec" id="again">Neue Lernkontrolle</button></div><div id="res"></div>`;
-  TEST.forEach((x,i)=>document.querySelector('[data-chk="tq'+i+'"]').addEventListener('click',()=>check(x,'tq'+i)));
+  TEST.forEach((x,i)=>bind(x,'tq'+i));
   $('#again').addEventListener('click',()=>{newTest();viewTest();window.scrollTo(0,0)});
   $('#eval').addEventListener('click',()=>{
     let n=0,miss={},open=0;TEST.forEach((x,i)=>{const r=check(x,'tq'+i);if(r===true)n++;else{if(r===null)open++;const k=x.tp;miss[k]=(miss[k]||0)+1}});
