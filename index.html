@@ -153,6 +153,7 @@ table.t th{background:var(--chip)}
   <main id="main"></main>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
 /* ---------- Grafiken ---------- */
 function ks(o){
@@ -185,8 +186,9 @@ const SIGN=`<svg viewBox="0 0 220 195" width="170" role="img" aria-label="Verkeh
 
 
 /* ---------- Aufgabengenerator: neue Zahlen bei jedem Klick ---------- */
-const R=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
-const pick=a=>a[Math.floor(Math.random()*a.length)];
+let RNG=Math.random;
+const R=(a,b)=>a+Math.floor(RNG()*(b-a+1));
+const pick=a=>a[Math.floor(RNG()*a.length)];
 const r2=n=>Math.round(n*100)/100;
 function F(n,dd=2){const f=10**dd;n=Math.round(n*f)/f;const neg=n<0;n=Math.abs(n);let [i,d]=String(n).split('.');if(i.length>3)i=i.replace(/\B(?=(\d{3})+(?!\d))/g,"'");return (neg?'−':'')+i+(d?','+d:'');}
 const GEN={
@@ -196,7 +198,7 @@ const GEN={
  m:()=>{const m=pick([4,5,6,8,10,12,15,16,20,24,25,30,35,40,45,50,60,75,80,120,150]),l=pick([2,4,5,8,10,20,25,40,50,80,100,200,250,400,500]);const h=l*m/100;const cm=h<2&&Math.random()<0.6;const hs=cm?F(h*100)+' cm':F(h)+' m';return{q:'Höhenunterschied '+hs+', horizontale Länge '+F(l)+' m. Wie gross ist die Steigung in Prozent?',a:m,u:'%',e:(cm?'Gleiche Einheiten: '+hs+' = '+F(h)+' m. ':'')+F(h)+' : '+F(l)+' = '+F(m/100)+' = '+m+' %'}},
  h:()=>{const m=pick([5,6,8,10,12,15,20,25,30,40,50,120]),l=pick([20,40,50,80,120,150,200,250,300,450,600,1200]);const h=l*m/100;return{q:'Eine Strasse hat '+m+' % Steigung. Die horizontale Länge ist '+F(l)+' m. Wie gross ist der Höhenunterschied?',a:r2(h),tol:0.006,u:'m',e:F(m/100)+' · '+F(l)+' m = '+F(h)+' m'}},
  l:()=>{const m=pick([5,6,8,10,12,15,20,25,40,50]),l=pick([10,20,30,40,60,80,100,150,200,300]);const h=l*m/100;return{q:'Eine Rampe hat '+m+' % Steigung und überwindet '+F(h)+' m. Wie lang ist die horizontale Länge?',a:l,u:'m',e:F(h)+' m : '+F(m/100)+' = '+F(l)+' m'}},
- pts:()=>{const x1=R(-4,3),dx=R(1,5),y1=R(-4,4);let dy=0;while(!dy)dy=R(-6,6);const x2=x1+dx,y2=y1+dy,v=dy/dx;return{q:'Eine Gerade geht durch A('+F(x1)+'|'+F(y1)+') und B('+F(x2)+'|'+F(y2)+'). Wie gross ist die Steigung m? Runde wenn nötig auf 2 Stellen.',a:r2(v),tol:0.006,e:'('+F(y2)+' − '+(y1<0?'('+F(y1)+')':F(y1))+') : ('+F(x2)+' − '+(x1<0?'('+F(x1)+')':F(x1))+') = '+F(dy)+' : '+dx+' = '+F(v)+(v<0?'. Die Gerade fällt.':'')}},
+ pts:()=>{const x1=R(-4,3),dx=R(1,5),y1=R(-4,4);let dy=0;while(!dy)dy=R(-6,6);const x2=x1+dx,y2=y1+dy,v=dy/dx;return{P:[x1,y1,x2,y2],q:'Eine Gerade geht durch A('+F(x1)+'|'+F(y1)+') und B('+F(x2)+'|'+F(y2)+'). Wie gross ist die Steigung m? Runde wenn nötig auf 2 Stellen.',a:r2(v),tol:0.006,e:'('+F(y2)+' − '+(y1<0?'('+F(y1)+')':F(y1))+') : ('+F(x2)+' − '+(x1<0?'('+F(x1)+')':F(x1))+') = '+F(dy)+' : '+dx+' = '+F(v)+(v<0?'. Die Gerade fällt.':'')}},
  y:()=>{const m=pick([0.5,1.5,2,3,-1,-2,-0.5,0.25]),q=R(-4,4),x=R(-4,6);const y=m*x+q;const eq='y = '+F(m)+'x'+(q?(q>0?' + '+q:' − '+Math.abs(q)):'');return{q:'Gerade '+eq+': Welchen y-Wert hat der Punkt mit x = '+F(x)+'?',a:r2(y),tol:0.006,e:F(m)+' · '+(x<0?'('+F(x)+')':F(x))+(q?(q>0?' + '+q:' − '+Math.abs(q)):'')+' = '+F(y)}},
  ramp:()=>{const h=pick([30,36,42,45,48,54,60,66,72,90]);const l=h/100/0.06;return{q:'Ein Eingang liegt '+h+' cm höher als der Weg. Eine Rollstuhlrampe darf höchstens 6 % Steigung haben. Wie lang muss die horizontale Länge mindestens sein? Runde auf 2 Stellen.',a:r2(l),tol:0.006,u:'m',e:F(h/100)+' m : 0,06 = '+F(l)+' m'}},
  bahn:()=>{const t=pick([450,600,780,900,1050,1200,1350]),d=pick([300,450,600,750,900,1200]),L=pick([1500,2000,2500,3000,4000,5000]);const v=d/L*100;return{q:'Eine Bergbahn fährt von '+F(t)+' m ü. M. auf '+F(t+d)+' m ü. M. Die horizontale Länge ist '+F(L)+' m. Wie gross ist die durchschnittliche Steigung in Prozent? Runde auf 2 Stellen.',a:r2(v),tol:0.006,u:'%',e:F(t+d)+' − '+F(t)+' = '+F(d)+' m. '+F(d)+' : '+F(L)+' ≈ '+F(v)+' %'}}
@@ -349,7 +351,7 @@ const fmt=n=>String(n).replace('-','−').replace('.',',');
 function nav(cur){
   let h='<div class="grp">Start</div><a href="#lernziele" class="'+(cur==='lernziele'?'on':'')+'"><span class="n">★</span>Lernziele</a><div class="grp">Themen</div>';
   ORDER.forEach(k=>{h+='<a href="#'+k+'" class="'+(cur===k?'on':'')+'"><span class="n">'+T[k].nr+'</span>'+T[k].title+'</a>'});
-  h+='<div class="grp">Testen</div><a href="#test" class="'+(cur==='test'?'on':'')+'"><span class="n">✓</span>Lernkontrolle</a>';
+  h+='<div class="grp">Testen</div><a href="#test" class="'+(cur==='test'?'on':'')+'"><span class="n">✓</span>Lernkontrolle</a><a href="#ab" class="'+(cur==='ab'?'on':'')+'"><span class="n">⎙</span>Arbeitsblatt drucken</a>';
   $('#side').innerHTML=h;
 }
 function goalList(){
@@ -439,9 +441,92 @@ function viewTest(){
     $('#res').scrollIntoView({behavior:'smooth',block:'start'});
   });
 }
+
+/* ---------- Arbeitsblatt-Generator (PDF im Stil der AB-Vorlage) ---------- */
+const ABCAT=[
+ {k:'v',l:'Vorwissen: Brüche und Prozente',g:['pct','dec'],on:false},
+ {k:'m',l:'Steigung berechnen (in %)',g:['m'],on:true},
+ {k:'hl',l:'Höhe oder horizontale Länge berechnen',g:['h','l','ramp'],on:true},
+ {k:'avg',l:'Durchschnittliche Steigung (Wege, Bergbahnen)',g:['avg','bahn'],on:true},
+ {k:'pts',l:'Steigung aus zwei Punkten (mit Koordinatensystem)',g:['pts'],on:true},
+ {k:'y',l:'Zusatz: Punkte auf Geraden (y = m · x + q)',g:['y'],on:false}
+];
+function mulberry(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function viewAB(){
+  $('#main').innerHTML=`<h2>Arbeitsblatt drucken</h2><p class="lead">Stelle dir ein Übungsblatt zusammen. Jedes Blatt hat neue Zahlen. Du bekommst eine PDF-Datei mit Aufgaben und einem Lösungsblatt. Drucke sie aus oder löse sie im Übungsheft.</p>
+  <div class="box"><h3>1. Themen wählen</h3><div class="goals">${ABCAT.map(c=>'<label class="goal" for="ab_'+c.k+'"><input type="checkbox" id="ab_'+c.k+'" '+(c.on?'checked':'')+'><span class="txt">'+esc(c.l)+'</span></label>').join('')}</div>
+  <h3 style="margin-top:18px">2. Anzahl Aufgaben</h3><div class="row" style="margin-top:0">${[4,6,8,10].map(n=>'<label class="opt" for="abn'+n+'" style="flex:0 0 auto"><input type="radio" name="abn" id="abn'+n+'" value="'+n+'" '+(n===6?'checked':'')+'><span>'+n+'</span></label>').join('')}</div>
+  <h3 style="margin-top:18px">3. Lösungen</h3><label class="goal" for="ab_sol"><input type="checkbox" id="ab_sol" checked><span class="txt">Lösungsblatt am Schluss anhängen</span></label>
+  <div class="row"><button class="btn" id="abgo">PDF erstellen</button><span id="abmsg" class="hint"></span></div></div>
+  <p class="foot">Auf jedem Blatt steht eine Blatt-Nummer. Mit derselben Nummer entsteht wieder dasselbe Blatt: <input id="abseed" inputmode="numeric" placeholder="Blatt-Nr. (leer = neu)" style="font:inherit;width:12em;padding:3px 6px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--fg)"></p>`;
+  $('#abgo').addEventListener('click',makeAB);
+}
+function pdfTxt(s){return String(s).replace(/−/g,'-').replace(/≈/g,'~').replace(/→/g,'->').replace(/[’]/g,"'").replace(/…/g,'...').replace(/µ/g,'u')}
+function makeAB(){
+  const msg=$('#abmsg');
+  if(!window.jspdf){msg.textContent='Die PDF-Funktion konnte nicht geladen werden. Prüfe die Internetverbindung.';return}
+  const cats=ABCAT.filter(c=>$('#ab_'+c.k).checked);
+  if(!cats.length){msg.textContent='Wähle mindestens ein Thema.';return}
+  const n=+document.querySelector('input[name=abn]:checked').value, withSol=$('#ab_sol').checked;
+  let seed=parseInt(($('#abseed').value||'').replace(/\D/g,''),10); if(!seed)seed=1000+Math.floor(Math.random()*9000);
+  const old=RNG; RNG=mulberry(seed*7919+n*31+cats.map(c=>c.k).join('').length);
+  const tasks=[]; const used={};
+  for(let i=0;i<n;i++){const c=cats[i%cats.length];let t,tries=0;
+    do{t=GEN[pick(c.g)]();tries++}while((used[t.q]||(c.k==='pts'&&t.P.some(v=>Math.abs(v)>5)))&&tries<60);
+    used[t.q]=1;t.cat=c.k;tasks.push(t)}
+  RNG=old;
+  const {jsPDF}=window.jspdf; const doc=new jsPDF({unit:'mm',format:'a4'});
+  const L=20,W=170,BLUE=[19,40,90],GREY=[128,128,128];
+  function head(title){
+    doc.setFillColor(...BLUE); doc.lines([[30,0],[-5,16],[-30,0]],162,6,[1,1],'F',true);
+    doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(15);doc.text('MA',172.5,16.5,{align:'center'});
+    doc.setTextColor(...GREY);doc.setFontSize(10);doc.text('LU 14 Steigung',L,16);doc.text('Übungsblatt Nr. '+seed,L+77,16);
+    doc.setTextColor(0,0,0);doc.setFontSize(14);doc.text(pdfTxt(title),L,25);doc.setDrawColor(0);doc.setLineWidth(0.3);doc.line(L,27,L+W,27);
+    doc.setFont('helvetica','normal');doc.setFontSize(10);
+  }
+  function grid(x,y,w,h){doc.setDrawColor(190,200,215);doc.setLineWidth(0.15);for(let i=0;i<=w;i+=5)doc.line(x+i,y,x+i,y+h);for(let j=0;j<=h;j+=5)doc.line(x,y+j,x+w,y+j);}
+  function ks(x,y,P){const u=4.5,s=5;grid0();
+    function grid0(){doc.setDrawColor(190,200,215);doc.setLineWidth(0.15);for(let i=-s;i<=s;i++){doc.line(x+(i+s)*u,y,x+(i+s)*u,y+2*s*u);doc.line(x,y+(i+s)*u,x+2*s*u,y+(i+s)*u)}}
+    doc.setDrawColor(60);doc.setLineWidth(0.35);const ox=x+s*u,oy=y+s*u;doc.line(x,oy,x+2*s*u,oy);doc.line(ox,y,ox,y+2*s*u);
+    doc.setFontSize(7);doc.setTextColor(90);for(let i=-s+1;i<s;i++){if(i&&i%2===0){doc.text(String(i),ox+i*u,oy+3,{align:'center'});doc.text(String(-i),ox-1,oy+i*u+1,{align:'right'})}}
+    doc.text('x',x+2*s*u-1.5,oy-1.2);doc.text('y',ox+1.2,y+2.5);
+    if(P){doc.setFillColor(0,0,0);doc.setTextColor(0);doc.setFontSize(8);[[P[0],P[1],'A'],[P[2],P[3],'B']].forEach(([a,b,nm])=>{doc.circle(ox+a*u,oy-b*u,0.8,'F');doc.text(nm,ox+a*u+1.2,oy-b*u-1.2)})}
+    doc.setFontSize(10);doc.setTextColor(0);
+  }
+  head('Übungsblatt: Steigung');
+  doc.text('Name: ______________________________',L,35);doc.text('Datum: ________________',L+110,35);
+  doc.setFontSize(9);doc.setTextColor(...GREY);doc.text(pdfTxt('Schreibe zu jeder Aufgabe den Rechenweg ins Häuschenfeld. Runde, wenn nötig, auf 2 Stellen nach dem Komma.'),L,41);doc.setTextColor(0);doc.setFontSize(10);
+  let y=48;
+  // Reihenfolge so wählen, dass die Seiten möglichst voll werden
+  tasks.forEach(t=>{t._lines=doc.splitTextToSize(pdfTxt(t.q),W-20);const ksT=t.cat==='pts';t._need=t._lines.length*4.6+(ksT?50:21)+13.5});
+  const order=[];let rest=tasks.slice(),yy=48;
+  while(rest.length){let k=rest.findIndex(t=>yy+t._need<=284);if(k<0){yy=34;k=0}order.push(rest[k]);yy+=rest[k]._need;rest.splice(k,1)}
+  tasks.length=0;order.forEach(t=>tasks.push(t));
+  tasks.forEach((t,i)=>{
+    const lines=t._lines;
+    const ksT=t.cat==='pts', boxH=ksT?46:20, need=t._need;
+    if(y+need>284){doc.addPage();head('Übungsblatt: Steigung');y=34}
+    doc.setFont('helvetica','bold');doc.text('Aufgabe '+(i+1),L,y);doc.setFont('helvetica','normal');
+    doc.text(lines,L+20,y);y+=lines.length*4.6+1.5;
+    if(ksT){doc.setFontSize(9);doc.setTextColor(...GREY);doc.text(pdfTxt('Zeichne die Gerade und ein Steigungsdreieck ein.'),L+20,y+1);doc.setTextColor(0);doc.setFontSize(10);
+      ks(L+20,y+3,t.P);grid(L+75,y+3,95,45);y+=50}
+    else{grid(L+20,y,150,boxH);y+=boxH+1}
+    doc.text('Resultat: ______________________'+(t.u?' '+t.u:''),L+20,y+5);y+=12;
+  });
+  if(withSol){doc.addPage();head('Lösungen zum Übungsblatt Nr. '+seed);y=36;
+    tasks.forEach((t,i)=>{const res=F(t.a)+(t.u?' '+t.u:'');const l1=doc.splitTextToSize(pdfTxt('Rechenweg: '+t.e),W-22);
+      if(y+6+l1.length*4.6>285){doc.addPage();head('Lösungen zum Übungsblatt Nr. '+seed);y=36}
+      doc.setFont('helvetica','bold');doc.text('Aufgabe '+(i+1)+':',L,y);doc.text(pdfTxt(res),L+22,y);doc.setFont('helvetica','normal');
+      doc.text(l1,L+22,y+5);y+=6+l1.length*4.6+3});
+    doc.setFontSize(9);doc.setTextColor(...GREY);doc.text(pdfTxt('Vergleiche zuerst den Rechenweg, dann das Resultat. Kleine Rundungsunterschiede sind in Ordnung.'),L,y+4);
+  }
+  const pages=doc.getNumberOfPages();for(let p=1;p<=pages;p++){doc.setPage(p);doc.setFontSize(8);doc.setTextColor(...GREY);doc.text('Seite '+p+' von '+pages,L+W,290,{align:'right'})}
+  const fn='Uebungsblatt_Steigung_'+seed+'.pdf';
+  try{doc.save(fn);msg.textContent='Fertig: '+fn+' (Blatt-Nr. '+seed+')';}catch(e){msg.textContent='Die PDF konnte hier nicht gespeichert werden. Öffne die Lernseite über den Link in LearningView.';}
+}
 function route(){
-  let h=(location.hash||'').slice(1);if(!T[h]&&h!=='test')h='lernziele';
-  nav(h);if(h==='lernziele')viewStart();else if(h==='test')viewTest();else viewTopic(h);
+  let h=(location.hash||'').slice(1);if(!T[h]&&h!=='test'&&h!=='ab')h='lernziele';
+  nav(h);if(h==='lernziele')viewStart();else if(h==='test')viewTest();else if(h==='ab')viewAB();else viewTopic(h);
   $('#side').classList.remove('open');$('#menuBtn').setAttribute('aria-expanded','false');window.scrollTo(0,0);
 }
 $('#menuBtn').addEventListener('click',()=>{const o=$('#side').classList.toggle('open');$('#menuBtn').setAttribute('aria-expanded',o)});
